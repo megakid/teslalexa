@@ -1,0 +1,21 @@
+{
+  "name": "teslalexa",
+  "version": "1.0.0",
+  "description": "Alexa Skill for the Tesla Model S ",
+  "dependencies": {
+    "teslams": "^1.1.6"
+  },
+  "main": "./index.js",
+  "directories": {
+    "lib": "."
+  },
+  "keywords": [
+    "alexa",
+    "tesla"
+  ],
+  "author": "James Connor <james.connor@gmail.com> (https://github.com/megakid/teslalexa)",
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
