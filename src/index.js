@@ -55,59 +55,65 @@ var teslams = require('teslams');
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript#Inheritance
  */
-var TidePooler = function () {
+var TeslaAlexa = function () {
     AlexaSkill.call(this, APP_ID);
 };
 
+var creds = undefined;
+var vehicleId = undefined;
+var vehicleStatus = undefined;
+       
 // Extend AlexaSkill
-TidePooler.prototype = Object.create(AlexaSkill.prototype);
-TidePooler.prototype.constructor = TidePooler;
+TeslaAlexa.prototype = Object.create(AlexaSkill.prototype);
+TeslaAlexa.prototype.constructor = TeslaAlexa;
 
 // ----------------------- Override AlexaSkill request and intent handlers -----------------------
+var teslalexa_SSPS = "Tesla Alexa";
 
-TidePooler.prototype.eventHandlers.onSessionStarted = function (sessionStartedRequest, session) {
-    
+TeslaAlexa.prototype.eventHandlers.onSessionStarted = function (sessionStartedRequest, session) {
 
     console.log("onSessionStarted requestId: " + sessionStartedRequest.requestId
         + ", sessionId: " + session.sessionId);
     // any initialization logic goes here
+
+    
 };
 
-TidePooler.prototype.eventHandlers.onLaunch = function (launchRequest, session, response) {
-    console.log("onLaunch requestId: " + launchRequest.requestId + ", sessionId: " + session.sessionId);
+TeslaAlexa.prototype.eventHandlers.onLaunch = function (launchRequest, session, response) {
     handleWelcomeRequest(response);
 };
 
-TidePooler.prototype.eventHandlers.onSessionEnded = function (sessionEndedRequest, session) {
-    console.log("onSessionEnded requestId: " + sessionEndedRequest.requestId
-        + ", sessionId: " + session.sessionId);
-    // any cleanup logic goes here
-};
+//TidePooler.prototype.eventHandlers.onSessionEnded = function (sessionEndedRequest, session) {
+//    console.log("onSessionEnded requestId: " + sessionEndedRequest.requestId
+//        + ", sessionId: " + session.sessionId);
+//    // any cleanup logic goes here
+//};
 
 /**
  * override intentHandlers to map intent handling functions.
  */
-TidePooler.prototype.intentHandlers = {
-    "OneshotTideIntent": function (intent, session, response) {
-        handleOneshotTideRequest(intent, session, response);
+TeslaAlexa.prototype.intentHandlers = {
+    "GetRange": function (intent, session, response) {
+        getRangeRequest(intent, session, response);
     },
 
-    "DialogTideIntent": function (intent, session, response) {
+    "GetOdometer": function (intent, session, response) {
         // Determine if this turn is for city, for date, or an error.
         // We could be passed slots with values, no slots, slots with no value.
-        var citySlot = intent.slots.City;
-        var dateSlot = intent.slots.Date;
-        if (citySlot && citySlot.value) {
-            handleCityDialogRequest(intent, session, response);
-        } else if (dateSlot && dateSlot.value) {
-            handleDateDialogRequest(intent, session, response);
-        } else {
-            handleNoSlotDialogRequest(intent, session, response);
-        }
+        //var citySlot = intent.slots.City;
+        //var dateSlot = intent.slots.Date;
+        //if (citySlot && citySlot.value) {
+        //    handleCityDialogRequest(intent, session, response);
+        //} else if (dateSlot && dateSlot.value) {
+        //    handleDateDialogRequest(intent, session, response);
+        //} else {
+        //    handleNoSlotDialogRequest(intent, session, response);
+        //}
+        getOdometerRequest(intent, session, response);
     },
 
-    "SupportedCitiesIntent": function (intent, session, response) {
-        handleSupportedCitiesRequest(intent, session, response);
+    "StartClimate": function (intent, session, response) {
+        startClimateRequest(intent, session, response);
     },
 
     "AMAZON.HelpIntent": function (intent, session, response) {
@@ -149,51 +155,108 @@ var STATIONS = {
 
 function handleWelcomeRequest(response) 
 {
-    console.log("HERE WE GO....");
-    
-    var creds = { 
-        username: "megakid@gmail.com", 
-        password: "8G2bdCWLQ#Ek" 
-    };
-
-
-    teslams.get_vid( { email: creds.username, password: creds.password }, 
-    function ( tresponse ) {
-        var data, vehicle;
-
-        console.log(tresponse);
-
-        var whichCityPrompt = "Which city would you like tide information for?",
-            speechOutput = {
-                speech: "<speak>Welcome to Tesla-Alexa. "
-                    + whichCityPrompt
+    getVehicle().then(function(value) {
+        response.ask({
+                speech: "<speak>Welcome to " + teslalexa_SSPS + ". "
+                    + value
                     + "</speak>",
                 type: AlexaSkill.speechOutputType.SSML
-            },
-            repromptOutput = {
-                speech: "I can lead you through providing a city and "
-                    + "day of the week to get tide information, "
-                    + "or you can simply open Tide Pooler and ask a question like, "
-                    + "get tide information for Seattle on Saturday. "
-                    + "For a list of supported cities, ask what cities are supported. "
-                    + whichCityPrompt,
-                type: AlexaSkill.speechOutputType.PLAIN_TEXT
-            };
-
-        response.ask(speechOutput, repromptOutput);
+            });
+    },
+    function(err) {
+                response.ask({
+                speech: "<speak>Welcome to " + teslalexa_SSPS + ". "
+                    + err
+                    + "</speak>",
+                type: AlexaSkill.speechOutputType.SSML
+            });
     });
 
-    console.log("BLAG");
+    //var welcomePrompt = "What information do you want from your Tesla?",
+    //        speechOutput = {
+    //            speech: "<speak>Welcome to " + teslalexa_SSPS + ". "
+    //                + welcomePrompt
+    //                + "</speak>",
+    //            type: AlexaSkill.speechOutputType.SSML
+    //        },
+    //        repromptOutput = {
+    //            speech: "You can simply open " + teslalexa_SSPS + " and ask a question like, "
+    //                + "how much range does my Tesla have?"
+    //                + welcomePrompt,
+    //            type: AlexaSkill.speechOutputType.PLAIN_TEXT
+    //        };
+
+    //response.ask(speechOutput, repromptOutput);
 
 }
 
+function startSession(session) 
+{
+    // replace with linked creds later...
+    creds = { 
+        email: "megakid@gmail.com", 
+        password: "8G2bdCWLQ#Ek" 
+    };
+
+    return getVehicle().then(
+        function (myTesla) {
+            return { car: myTesla, awake: myTesla.state != 'asleep', vid: tresponse.id };
+        },
+        function (err) {
+            return err;
+        });
+}
+
+function wakeUp(vid) {
+    var promise = new Promise(function(resolve, reject) 
+    {
+        teslams.wake_up(vid, function(tresponse) {
+            if (tresponse instanceof Error)
+                reject(tresponse)
+            else
+                resolve(!!tresponse);
+        });
+    });
+
+    return promise;
+    
+}
+ 
+function getVehicle() {
+    var promise = new Promise(function(resolve, reject) 
+    {
+        if (!!vehicleId) {
+            resolve(vehicleId);
+        } else {
+            if (!creds) {
+                reject(new Error("Credentials not defined."))
+            } else {
+                // This logs in and gives the first vehicle id listed on MyTesla for that user.
+                teslams.vehicles(creds, 
+                    function ( tresponse ) {
+                        
+                        vehicleId = tresponse.id;
+
+                        resolve(tresponse);
+
+                        console.log("Got Tesla vid " + JSON.stringify(tresponse) + " for username " + creds.email);
+                    });
+            }
+        }
+    });
+
+    return promise;
+}
+
+function getBatteryStats(vid) {
+
+}
+
+
 function handleHelpRequest(response) {
-    var repromptText = "Which city would you like tide information for?";
-    var speechOutput = "I can lead you through providing a city and "
-        + "day of the week to get tide information, "
-        + "or you can simply open Tide Pooler and ask a question like, "
-        + "get tide information for Seattle on Saturday. "
-        + "For a list of supported cities, ask what cities are supported. "
+    var repromptText = "What information do you want from your Tesla?";
+    var speechOutput = "You can simply open " + teslalexa_SSPS + " and ask a question like, "
+        + "how much range does my Tesla have?"
         + "Or you can say exit. "
         + repromptText;
 
@@ -203,19 +266,25 @@ function handleHelpRequest(response) {
 /**
  * Handles the case where the user asked or for, or is otherwise being with supported cities
  */
-function handleSupportedCitiesRequest(intent, session, response) {
+function getRangeRequest(intent, session, response) {
+    startSession(session).then(function (value) {
+        response.ask(JSON.stringify(value));
+    },
+    function (err) {
+        response.ask("Error :" + JSON.stringify(err));
+    });
     // get city re-prompt
-    var repromptText = "Which city would you like tide information for?";
-    var speechOutput = "Currently, I know tide information for these coastal cities: " + getAllStationsText()
-        + repromptText;
+    //var repromptText = "Which city would you like tide information for?";
+    //var speechOutput = "Currently, I know tide information for these coastal cities: " + getAllStationsText()
+    //    + repromptText;
 
-    response.ask(speechOutput, repromptText);
+    //response.ask(speechOutput, repromptText);
 }
 
 /**
  * Handles the dialog step where the user provides a city
  */
-function handleCityDialogRequest(intent, session, response) {
+function getOdometerRequest(intent, session, response) {
 
     var cityStation = getCityStationFromIntent(intent, false),
         repromptText,
@@ -245,7 +314,7 @@ function handleCityDialogRequest(intent, session, response) {
 /**
  * Handles the dialog step where the user provides a date
  */
-function handleDateDialogRequest(intent, session, response) {
+function startClimateRequest(intent, session, response) {
 
     var date = getDateFromIntent(intent),
         repromptText,
@@ -567,7 +636,7 @@ function getAllStationsText() {
 
 // Create the handler that responds to the Alexa Request.
 exports.handler = function (event, context) {
-    var tidePooler = new TidePooler();
+    var tidePooler = new TeslaAlexa();
     tidePooler.execute(event, context);
 };
 

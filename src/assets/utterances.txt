@@ -1,0 +1,23 @@
+GetRange how much battery it has
+GetRange how much range it has
+GetRange how much battery is left
+GetRange what its range is
+GetRange its battery
+GetRange its range
+GetRange its level
+GetRange its battery level
+GetRange what battery is left
+GetRange battery
+GetRange range
+GetRange level
+GetRange what battery it has left
+GetRange how much battery it has left
+GetRange the battery level
+GetOdometer how many miles is on the clock
+GetOdometer what the mileometer is
+GetOdometer what the odometer is
+GetOdometer for how many miles it has done
+GetOdometer for how many miles its done
+GetOdometer how many miles it has done
+GetOdometer how many miles its done
+StartClimate start climate control
