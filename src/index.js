@@ -48,7 +48,7 @@ var http = require('http'),
 var AlexaSkill = require('./AlexaSkill');
 
 var teslams = require('teslams');
-
+var config = require('./config');
 /**
  * TidePooler is a child of AlexaSkill.
  * To read more about inheritance in JavaScript, see the link below.
@@ -194,8 +194,8 @@ function startSession(session)
 {
     // replace with linked creds later...
     creds = { 
-        email: "megakid@gmail.com", 
-        password: "8G2bdCWLQ#Ek" 
+        email: config.mytesla.username, 
+        password: config.mytesla.password 
     };
 
     return getVehicle().then(
